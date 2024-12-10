@@ -1,8 +1,6 @@
-import fs from "node:fs";
-const buffer = fs.readFileSync("input.txt");
+import { parseTextToLines } from "../utils/index.mjs";
 
-const bufferedData = buffer.toString();
-const lines = bufferedData.split(/\n/g);
+const lines = parseTextToLines("./input.txt");
 
 // SETUP
 
