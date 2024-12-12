@@ -6,7 +6,19 @@ const lines = parseTextToLines("./input.txt");
 
 const tuples = lines.map((line) => line.split(" "));
 
-// PART 1: How many reports are safe?
+function checkIfAllIncreasingOrDecreasing(tuple = []) {
+  let total = 0;
+  let absoluteTotal = 0;
+
+  tuple.map(Number).forEach((curr, idx, arr) => {
+    if (idx <= tuple.length - 2) {
+      total += curr - arr[idx + 1];
+      absoluteTotal += Math.abs(curr - arr[idx + 1]);
+    }
+  });
+
+  return Math.abs(total) === absoluteTotal;
+}
 
 function hasSafeDistance(tuple = [], i = 0) {
   if (!Array.isArray(tuple) || tuple.length <= 1) {
@@ -23,37 +35,16 @@ function hasSafeDistance(tuple = [], i = 0) {
   return true;
 }
 
+// =====
+// PART 1: How many reports are safe?
+
 function countSafeLevelPartOne() {
   let safeLevelCount = 0;
 
-  tuples.forEach((tuple, idx) => {
-    let total = 0;
-    let absoluteTotal = 0;
-
-    tuple.map(Number).forEach((curr, idx, arr) => {
-      if (idx <= tuple.length - 2) {
-        total += curr - arr[idx + 1];
-        absoluteTotal += Math.abs(curr - arr[idx + 1]);
-      }
-    });
-
+  tuples.forEach((tuple) => {
     // 1. The levels are either all increasing or all decreasing.
-    const isAllIncrementalOrDecremental = Math.abs(total) === absoluteTotal;
-
     // 2. Any two adjacent levels differ by at least one and at most three.
-    const isHavingSafeDistance = hasSafeDistance(tuple);
-
-    console.warn(
-      `${idx.toString().padStart(3, "-")} ||`,
-      tuple.toString().padEnd(23, " "),
-      " | ",
-      isAllIncrementalOrDecremental.toString().padEnd(5, " "),
-      isHavingSafeDistance.toString().padEnd(5, " "),
-      " | ",
-      total,
-      absoluteTotal,
-    );
-    if (isAllIncrementalOrDecremental && isHavingSafeDistance) {
+    if (checkIfAllIncreasingOrDecreasing(tuple) && hasSafeDistance(tuple)) {
       safeLevelCount += 1;
     }
   });
@@ -68,4 +59,50 @@ console.info(
   safeLevelCountPartOne,
   ", Unsafe level count",
   lines.length - safeLevelCountPartOne,
+);
+
+// =====
+// PART 2
+
+function countSafeLevelPartTwo() {
+  return tuples.reduce((safeLevelTotal, currentTupple) => {
+    // 1. The levels are either all increasing or all decreasing.
+    // 2. Any two adjacent levels differ by at least one and at most three.
+    if (
+      checkIfAllIncreasingOrDecreasing(currentTupple) &&
+      hasSafeDistance(currentTupple)
+    ) {
+      safeLevelTotal += 1;
+
+      return safeLevelTotal;
+    }
+
+    // Try removing each level one at a time
+    for (let i = 0; i < currentTupple.length; i++) {
+      const modifiedTupple = [
+        ...currentTupple.slice(0, i),
+        ...currentTupple.slice(i + 1),
+      ];
+
+      if (
+        checkIfAllIncreasingOrDecreasing(modifiedTupple) &&
+        hasSafeDistance(modifiedTupple)
+      ) {
+        safeLevelTotal += 1;
+
+        return safeLevelTotal;
+      }
+    }
+
+    return safeLevelTotal;
+  }, 0);
+}
+
+const safeLevelCountPartTwo = countSafeLevelPartTwo();
+
+console.info(
+  "PART 2: Tolerant safe level count",
+  safeLevelCountPartTwo,
+  ", Unsafe level count",
+  lines.length - safeLevelCountPartTwo,
 );
